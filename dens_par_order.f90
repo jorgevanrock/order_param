@@ -21,7 +21,6 @@ module variables
  double precision,dimension(:),allocatable :: p2s,p2d 
  double precision :: dirx,diry,dirz
  double precision,dimension(:),allocatable :: qxxp,qxyp,qxzp,qyyp,qyzp,qzzp
- integer :: maxbin=1000
 end
 !***********************
 !*********MAIN**********
@@ -121,6 +120,10 @@ do j=1,nbloq
   qzzp = 0.0d0
  do i=1,nat
   bin = rz(j,i)/deltap
+  !Sabemos que algunas partículas están ligeramente fuera de la caja.
+  !dado el deltap pueden caer en otro bin. Aqui las consideramos dentro
+  !del bin extremo.
+  if(bin > nbinp)  bin = nbinp
   nqz(bin)  = nqz(bin) + 1
   qxxp(bin) = qxxp(bin) + ex(j,i)*ex(j,i)
   qxyp(bin) = qxyp(bin) + ex(j,i)*ey(j,i)
@@ -131,7 +134,7 @@ do j=1,nbloq
  enddo
  
  ini   = 0 
- fin   = 10 
+ fin   = 10 !numero de bins que conforman una celda
  do i=ini, fin
   n = n + nqz(i)
   qxxb = qxxb + qxxp(i)
@@ -145,7 +148,6 @@ do j=1,nbloq
  celda = 0
  do while(ini<nbinp)
   if(n>0) then
-!   if(n<50) write(*,*) n
    qq(1,1) = 1.50*qxxb/dble(n)-0.50
    qq(1,2) = qxyb/dble(n)
    qq(1,3) = qxzb/dble(n)
